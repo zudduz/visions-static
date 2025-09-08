@@ -12,7 +12,7 @@ steps:
 # This allows you to define the bucket name without hardcoding it in the YAML file.
 # You will set the value for _BUCKET_NAME when you create the trigger in the Google Cloud Console.
 substitutions:
-  _BUCKET_NAME: 'zudduz.com'
+  _BUCKET_NAME: 'www.zudduz.com'
 
 # Options to customize the build environment.
 options:
