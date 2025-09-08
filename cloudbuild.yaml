@@ -1,0 +1,32 @@
+steps:
+  # The first step uses the Cloud SDK builder to copy your static files.
+  # This builder includes a variety of command-line tools, including gsutil.
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'Copy Static Assets to Cloud Storage'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        # Use gsutil to recursively copy the contents of the 'static' folder to a Cloud Storage bucket.
+        # The -r flag stands for "recursive", and -m enables "multi-threaded" copying for speed.
+        gsutil -m cp -r ./static/* "gs://${_BUCKET_NAME}"
+
+# We use substitutions to make the build configuration more flexible and reusable.
+# This allows you to define the bucket name without hardcoding it in the YAML file.
+# You will set the value for _BUCKET_NAME when you create the trigger in the Google Cloud Console.
+substitutions:
+  _BUCKET_NAME: 'zudduz.com'
+
+# The artifacts field specifies what files to store after the build.
+# We'll use this to save a log of the copied files.
+artifacts:
+  objects:
+    location: "gs://${_BUCKET_NAME}/build-logs"
+    paths:
+      - /builder/logs/*
+
+# Options to customize the build environment.
+options:
+  machineType: 'E2_HIGHCPU_8'
+  logging: 'CLOUD_LOGGING_ONLY'
+  timeout: '1200s'
