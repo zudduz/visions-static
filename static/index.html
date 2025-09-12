@@ -29,10 +29,6 @@
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2024 Visions Project</p>
-    </footer>
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const generateBtn = document.getElementById('generate-btn');
@@ -47,8 +43,7 @@
                 visionDisplay.classList.add('hidden');
 
                 try {
-                    // IMPORTANT: Replace with your actual backend API endpoint
-                    const response = await fetch('/api/generate-vision');
+                    const response = await fetch('https://visions-cloud-run-171510694317.us-east4.run.app/vision');
                     if (!response.ok) {
                         throw new Error(`Network response was not ok: ${response.statusText}`);
                     }
