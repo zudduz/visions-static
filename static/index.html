@@ -51,8 +51,19 @@
                     }
                     const data = await response.json(); // Expects { "image": "url", "text": "string" }
 
-                    visionImage.src = data.image;
-                    visionText.textContent = data.text;
+                    if (data.image) {
+                        visionImage.src = data.image;
+                        visionImage.style.display = 'block';
+                    } else {
+                        visionImage.style.display = 'none';
+                    }
+
+                    if (data.text) {
+                        visionText.textContent = data.text;
+                    } else {
+                        visionText.textContent = '';
+                    }
+                    
                     visionDisplay.classList.remove('hidden');
                 } catch (error) {
                     console.error('Error fetching vision:', error);
