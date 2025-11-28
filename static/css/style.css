@@ -110,6 +110,10 @@ section {
     border: 1px solid var(--border-color);
 }
 
+#vision-text {
+    white-space: pre-wrap;
+}
+
 /* Footer */
 footer {
     background-color: var(--footer-bg);
