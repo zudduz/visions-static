@@ -117,13 +117,13 @@ section {
 }
 
 .loading {
-    animation: pulse-gray 1.5s infinite ease-in-out;
+    animation: pulse-gray 3s infinite ease-in-out;
     cursor: wait !important;
 }
 
 .loading::after {
     content: "";
-    animation: blink 1.5s infinite step-end;
+    animation: blink 3s infinite step-end;
     display: inline-block;
     width: 1.2em;
     text-align: left;
