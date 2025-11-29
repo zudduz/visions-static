@@ -101,6 +101,34 @@ section {
     cursor: not-allowed;
 }
 
+/* Loading Animation */
+@keyframes blink {
+    0% { content: ""; }
+    25% { content: "."; }
+    50% { content: ".."; }
+    75% { content: "..."; }
+}
+
+/* Pulse effect for the button background while loading */
+@keyframes pulse-gray {
+    0% { background-color: #a0a0a0; }
+    50% { background-color: #b0b0b0; }
+    100% { background-color: #a0a0a0; }
+}
+
+.loading {
+    animation: pulse-gray 1.5s infinite ease-in-out;
+    cursor: wait !important;
+}
+
+.loading::after {
+    content: "";
+    animation: blink 1.5s infinite step-end;
+    display: inline-block;
+    width: 1.2em;
+    text-align: left;
+}
+
 /* Vision Display */
 #vision-display img {
     max-width: 100%;

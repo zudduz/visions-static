@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Spiritual Visions</title>
-    <link rel="stylesheet" href="css/style.css?v=1.1">
+    <link rel="stylesheet" href="css/style.css?v=1.2">
 </head>
 <body>
     <header>
@@ -39,7 +39,8 @@
 
             generateBtn.addEventListener('click', async () => {
                 generateBtn.disabled = true;
-                generateBtn.textContent = 'Generating...';
+                generateBtn.textContent = 'Generating'; // Removed ... to let CSS handle it
+                generateBtn.classList.add('loading');
                 visionDisplay.classList.add('hidden');
 
                 try {
@@ -74,6 +75,7 @@
                 } finally {
                     generateBtn.disabled = false;
                     generateBtn.textContent = originalButtonText;
+                    generateBtn.classList.remove('loading');
                 }
             });
         });
