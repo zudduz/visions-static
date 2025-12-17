@@ -5,16 +5,23 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="header">
-        <h1 id="agent-title">️</h1>
-        <div class="top-right-controls">
-            <select id="story-select"></select>
-        </div>
+    <div id="story-selection-view">
+        <h1>Choose a story</h1>
+        <div id="story-list"></div>
     </div>
-    <div id="history"></div>
-    <div class="input-area">
-        <textarea id="msg" placeholder=""></textarea>
-        <button onclick="send()">Send</button>
+
+    <div id="chat-view" style="display: none;">
+        <div class="header">
+            <h1 id="agent-title">️</h1>
+            <div class="top-right-controls">
+                <button id="new-chat-button">New Chat</button>
+            </div>
+        </div>
+        <div id="history"></div>
+        <div class="input-area">
+            <textarea id="msg" placeholder=""></textarea>
+            <button onclick="send()">Send</button>
+        </div>
     </div>
 
     <script src="script.js"></script>
