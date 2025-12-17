@@ -1,13 +1,9 @@
-let scenarios = [];
+const API_BASE_URL = 'https://cscratch-171510694317.us-central1.run.app';
+let stories = [];
+let currentGameId = null;
 
 document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const thread_id_from_url = urlParams.get('thread_id');
-    if (thread_id_from_url) {
-        sessionStorage.setItem('thread_id', thread_id_from_url);
-    }
-
-    loadScenarios();
+    loadStories();
     document.getElementById('msg').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -15,91 +11,83 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    document.getElementById('scenario-select').addEventListener('change', function() {
-        updateScenario();
-        resetThread();
+    document.getElementById('story-select').addEventListener('change', function() {
+        updateStory();
+        resetGame();
     });
 });
 
-function resetThread() {
-    sessionStorage.removeItem('thread_id');
+function resetGame() {
+    sessionStorage.removeItem('game_id');
+    currentGameId = null;
     document.getElementById('history').innerHTML = '';
     const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
     window.history.pushState({path:newUrl}, '', newUrl);
 }
 
-async function loadScenarios() {
+async function loadStories() {
     try {
-        const response = await fetch('https://cscratch-171510694317.us-central1.run.app/scenarios');
+        const response = await fetch(`${API_BASE_URL}/stories/`, { cache: 'reload' });
         if (!response.ok) {
-            throw new Error(`Failed to load scenarios: ${response.status}`);
+            throw new Error(`Failed to load stories: ${response.status}`);
         }
-        scenarios = await response.json();
+        stories = await response.json();
 
-        const select = document.getElementById('scenario-select');
+        const select = document.getElementById('story-select');
         select.innerHTML = ''; // Clear existing options
 
-        scenarios.forEach(scenario => {
+        stories.forEach(story => {
             const option = document.createElement('option');
-            option.value = scenario.id;
-            option.textContent = scenario.displayName;
+            option.value = story.id;
+            option.textContent = story.displayName;
             select.appendChild(option);
         });
 
-        // Set initial scenario
-        if (scenarios.length > 0) {
-            select.value = scenarios[0].id;
-            updateScenario();
+        if (stories.length > 0) {
+            select.value = stories[0].id;
+            updateStory();
         }
     } catch (err) {
-        console.error("Failed to load scenarios:", err);
-        // Maybe show an error to the user in the UI
+        console.error("Failed to load stories:", err);
     }
 }
 
-function updateScenario() {
-    const select = document.getElementById('scenario-select');
-    const selectedScenarioId = select.value;
-    const selectedScenario = scenarios.find(s => s.id === selectedScenarioId);
+function updateStory() {
+    const select = document.getElementById('story-select');
+    const selectedStoryId = select.value;
+    const selectedStory = stories.find(s => s.id === selectedStoryId);
 
-    if (selectedScenario) {
-        document.getElementById('agent-title').textContent = selectedScenario.displayName;
-        document.getElementById('msg').placeholder = selectedScenario.placeholderText;
+    if (selectedStory) {
+        document.getElementById('agent-title').textContent = selectedStory.displayName;
+        document.getElementById('msg').placeholder = selectedStory.placeholderText;
     }
 }
 
 async function send() {
     const input = document.getElementById('msg');
     const history = document.getElementById('history');
-    const select = document.getElementById('scenario-select');
+    const select = document.getElementById('story-select');
     const txt = input.value;
-    const scenario = select.value;
+    const story_id = select.value;
 
     if (!txt) return;
 
-    // 1. Show User Message
     history.innerHTML += `<div class="user">You: ${txt}</div>`;
     input.value = '';
 
-    // Get or create a thread_id
-    let thread_id = sessionStorage.getItem('thread_id');
-    if (!thread_id) {
-        thread_id = crypto.randomUUID();
-        sessionStorage.setItem('thread_id', thread_id);
-        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?thread_id=' + thread_id;
-        window.history.pushState({path:newUrl}, '', newUrl);
+    if (!currentGameId) {
+        currentGameId = crypto.randomUUID();
+        sessionStorage.setItem('game_id', currentGameId);
     }
 
     const payload = {
-        message: txt,
-        thread_id: thread_id,
-        scenario: scenario
+        message: txt
     };
 
     const aiResponseDiv = document.createElement('div');
     aiResponseDiv.className = 'ai';
-    const selectedScenario = scenarios.find(s => s.id === scenario);
-    const agentName = selectedScenario ? selectedScenario.displayName : 'Gemini';
+    const selectedStory = stories.find(s => s.id === story_id);
+    const agentName = selectedStory ? selectedStory.displayName : 'Gemini';
     aiResponseDiv.textContent = `${agentName}: `;
     history.appendChild(aiResponseDiv);
     history.scrollTop = history.scrollHeight;
@@ -110,7 +98,7 @@ async function send() {
     }
 
     try {
-        const response = await fetch('https://cscratch-171510694317.us-central1.run.app/stream-chat', {
+        const response = await fetch(`${API_BASE_URL}/stories/${story_id}/games/${currentGameId}/chat`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(payload)
@@ -139,17 +127,13 @@ async function send() {
 
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split('\n\n');
-            buffer = lines.pop(); // Keep the last partial line
+            buffer = lines.pop(); 
 
             for (const line of lines) {
                 if (line.startsWith('data: ')) {
                     const jsonStr = line.substring(6);
                     try {
                         const data = JSON.parse(jsonStr);
-
-                        if (data.thread_id) {
-                            sessionStorage.setItem('thread_id', data.thread_id);
-                        }
 
                         if (data.token) {
                             const span = document.createElement('span');
