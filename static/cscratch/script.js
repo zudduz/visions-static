@@ -29,31 +29,61 @@ function handleUrl() {
 
     if (match && match[1]) {
         const storyId = match[1];
-        const threadId = match[2];
+        const threadId = match[2]; // This is the gameId
 
-        // Find the story
         const story = stories.find(s => s.id === storyId);
         if (story) {
-            selectStory(story, false); // select the story without resetting the game
+            selectStory(story, false);
             if (threadId && threadId !== currentGameId) {
                 currentGameId = threadId;
                 sessionStorage.setItem('game_id', currentGameId);
-                // Here you would typically load the chat history for this thread
-                // For this demo, we\'ll just clear the history.
-                document.getElementById('history').innerHTML = '';
-
+                // Load the chat history
+                loadChatHistory(storyId, threadId);
             } else if (!threadId) {
-                // If there\'s no threadId in the URL, we\'re starting a new chat
-                resetGame(false); // don't update URL, as it's already correct
+                resetGame(false);
             }
         } else {
-            // Story not found, go to story selection
             history.replaceState({}, '', '/cscratch/stories/');
             showStorySelection();
         }
     } else {
-        // Show the story selection view if the URL doesn't match
         showStorySelection();
+    }
+}
+
+async function loadChatHistory(storyId, gameId) {
+    const historyDiv = document.getElementById('history');
+    historyDiv.innerHTML = ''; // Clear current history
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/stories/${storyId}/games/${gameId}`);
+        if (!response.ok) {
+            throw new Error(`Failed to load chat history: ${response.status}`);
+        }
+        const history = await response.json();
+
+        const agentName = selectedStory ? selectedStory.displayName : 'Gemini';
+
+        history.forEach(message => {
+            if (message.type === 'system') {
+                return; // Skip system messages
+            }
+
+            const messageDiv = document.createElement('div');
+            if (message.type === 'human') {
+                messageDiv.className = 'user';
+                messageDiv.textContent = `You: ${message.content}`;
+            } else if (message.type === 'ai') {
+                messageDiv.className = 'ai';
+                messageDiv.textContent = `${agentName}: ${message.content}`;
+            }
+            historyDiv.appendChild(messageDiv);
+        });
+        historyDiv.scrollTop = historyDiv.scrollHeight;
+
+    } catch (err) {
+        console.error("Failed to load chat history:", err);
+        historyDiv.innerHTML = `<div class="error">Failed to load chat history.</div>`;
     }
 }
 
@@ -65,7 +95,6 @@ function showStorySelection() {
     currentGameId = null;
     sessionStorage.removeItem('game_id');
 
-    // Load and display threads
     const threadList = document.getElementById('thread-list');
     threadList.innerHTML = '';
     const threads = JSON.parse(localStorage.getItem('cscratch_threads') || '[]');
@@ -75,7 +104,7 @@ function showStorySelection() {
             const story = stories.find(s => s.id === thread.storyId);
             const storyName = story ? story.displayName : thread.storyId;
             const threadElement = document.createElement('div');
-            threadElement.className = 'story'; // Re-use the story class for consistent styling
+            threadElement.className = 'story';
             threadElement.innerHTML = `
                 <div class="delete-thread">x</div>
                 <h3>${storyName}</h3>
@@ -113,7 +142,6 @@ function updateUrl() {
     if (currentGameId) {
         newUrl += `/threads/${currentGameId}`;
     }
-    // Use pushState to update the URL with a new entry in the browser's history
     history.pushState({path: newUrl}, '', newUrl);
 }
 
@@ -145,7 +173,6 @@ async function loadStories() {
                 <p>${story.description}</p>
             `;
             storyElement.addEventListener('click', () => {
-                // When a story is clicked, navigate to its URL
                 history.pushState({}, '', `/cscratch/stories/${story.id}`);
                 handleUrl();
             });
@@ -162,11 +189,10 @@ function selectStory(story, doResetGame = true) {
     document.getElementById('agent-title').textContent = selectedStory.displayName;
     document.getElementById('msg').placeholder = selectedStory.placeholderText;
     document.getElementById('story-selection-view').style.display = 'none';
-    document.getElementById('chat-view').style.display = 'flex'; // Use flex as per corrected CSS
+    document.getElementById('chat-view').style.display = 'flex';
     if (doResetGame) {
         resetGame();
     }
-    // URL is now managed by handleUrl and clicks, so we don't need to call updateUrl here
 }
 
 
@@ -192,7 +218,7 @@ async function send() {
             localStorage.setItem('cscratch_threads', JSON.stringify(threads));
         }
 
-        updateUrl(); // Update URL with the new thread-id
+        updateUrl();
     }
 
     const payload = {
