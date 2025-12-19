@@ -64,6 +64,42 @@ function showStorySelection() {
     selectedStory = null;
     currentGameId = null;
     sessionStorage.removeItem('game_id');
+
+    // Load and display threads
+    const threadList = document.getElementById('thread-list');
+    threadList.innerHTML = '';
+    const threads = JSON.parse(localStorage.getItem('cscratch_threads') || '[]');
+
+    if (threads.length > 0) {
+        threads.forEach(thread => {
+            const story = stories.find(s => s.id === thread.storyId);
+            const storyName = story ? story.displayName : thread.storyId;
+            const threadElement = document.createElement('div');
+            threadElement.className = 'story'; // Re-use the story class for consistent styling
+            threadElement.innerHTML = `
+                <div class="delete-thread">x</div>
+                <h3>${storyName}</h3>
+                <p>Thread: ${thread.threadId}</p>
+            `;
+            threadElement.addEventListener('click', () => {
+                history.pushState({}, '', `/cscratch/stories/${thread.storyId}/threads/${thread.threadId}`);
+                handleUrl();
+            });
+
+            const deleteButton = threadElement.querySelector('.delete-thread');
+            deleteButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const threads = JSON.parse(localStorage.getItem('cscratch_threads') || '[]');
+                const updatedThreads = threads.filter(t => t.threadId !== thread.threadId);
+                localStorage.setItem('cscratch_threads', JSON.stringify(updatedThreads));
+                showStorySelection();
+            });
+
+            threadList.appendChild(threadElement);
+        });
+    } else {
+        threadList.innerHTML = '<p>No saved threads yet.</p>';
+    }
 }
 
 
@@ -149,6 +185,13 @@ async function send() {
     if (!currentGameId) {
         currentGameId = crypto.randomUUID();
         sessionStorage.setItem('game_id', currentGameId);
+        
+        const threads = JSON.parse(localStorage.getItem('cscratch_threads') || '[]');
+        if (!threads.some(t => t.threadId === currentGameId)) {
+            threads.push({ storyId: story_id, threadId: currentGameId });
+            localStorage.setItem('cscratch_threads', JSON.stringify(threads));
+        }
+
         updateUrl(); // Update URL with the new thread-id
     }
 

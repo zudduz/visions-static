@@ -139,7 +139,7 @@ button:hover {
     margin-bottom: 2rem;
 }
 
-#story-list {
+#story-list, #thread-list {
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -148,6 +148,7 @@ button:hover {
 }
 
 .story {
+    position: relative;
     background-color: #2a2a2a;
     border: 1px solid #444;
     border-radius: 8px;
@@ -180,4 +181,28 @@ button:hover {
 
 #new-chat-button:hover {
     background-color: #546E7A;
+}
+
+hr {
+    border: none;
+    height: 1px;
+    background-color: #444;
+    width: 80%;
+    margin: 2rem 0;
+}
+
+.delete-thread {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    color: #aaa;
+    font-weight: bold;
+    padding: 0px 5px;
+}
+
+.delete-thread:hover {
+    color: #fff;
+    background-color: #546E7A;
+    border-radius: 5px;
 }
