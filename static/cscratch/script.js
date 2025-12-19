@@ -25,21 +25,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function handleUrl() {
     const path = window.location.pathname;
-    const match = path.match(/\/cscratch\/stories\/([^\/]+)(?:\/threads\/([^\/]+))?/);
+    const match = path.match(/\/cscratch\/stories\/([^\/]+)(?:\/games\/([^\/]+))?/);
 
     if (match && match[1]) {
         const storyId = match[1];
-        const threadId = match[2]; // This is the gameId
+        const gameId = match[2];
 
         const story = stories.find(s => s.id === storyId);
         if (story) {
             selectStory(story, false);
-            if (threadId && threadId !== currentGameId) {
-                currentGameId = threadId;
+            if (gameId && gameId !== currentGameId) {
+                currentGameId = gameId;
                 sessionStorage.setItem('game_id', currentGameId);
                 // Load the chat history
-                loadChatHistory(storyId, threadId);
-            } else if (!threadId) {
+                loadChatHistory(storyId, gameId);
+            } else if (!gameId) {
                 resetGame(false);
             }
         } else {
@@ -95,39 +95,39 @@ function showStorySelection() {
     currentGameId = null;
     sessionStorage.removeItem('game_id');
 
-    const threadList = document.getElementById('thread-list');
-    threadList.innerHTML = '';
-    const threads = JSON.parse(localStorage.getItem('cscratch_threads') || '[]');
+    const gameList = document.getElementById('game-list');
+    gameList.innerHTML = '';
+    const games = JSON.parse(localStorage.getItem('cscratch_games') || '[]');
 
-    if (threads.length > 0) {
-        threads.forEach(thread => {
-            const story = stories.find(s => s.id === thread.storyId);
-            const storyName = story ? story.displayName : thread.storyId;
-            const threadElement = document.createElement('div');
-            threadElement.className = 'story';
-            threadElement.innerHTML = `
-                <div class="delete-thread">x</div>
+    if (games.length > 0) {
+        games.forEach(game => {
+            const story = stories.find(s => s.id === game.storyId);
+            const storyName = story ? story.displayName : game.storyId;
+            const gameElement = document.createElement('div');
+            gameElement.className = 'story';
+            gameElement.innerHTML = `
+                <div class="delete-game">x</div>
                 <h3>${storyName}</h3>
-                <p>Thread: ${thread.threadId}</p>
+                <p>Game: ${game.gameId}</p>
             `;
-            threadElement.addEventListener('click', () => {
-                history.pushState({}, '', `/cscratch/stories/${thread.storyId}/threads/${thread.threadId}`);
+            gameElement.addEventListener('click', () => {
+                history.pushState({}, '', `/cscratch/stories/${game.storyId}/games/${game.gameId}`);
                 handleUrl();
             });
 
-            const deleteButton = threadElement.querySelector('.delete-thread');
+            const deleteButton = gameElement.querySelector('.delete-game');
             deleteButton.addEventListener('click', (event) => {
                 event.stopPropagation();
-                const threads = JSON.parse(localStorage.getItem('cscratch_threads') || '[]');
-                const updatedThreads = threads.filter(t => t.threadId !== thread.threadId);
-                localStorage.setItem('cscratch_threads', JSON.stringify(updatedThreads));
+                const games = JSON.parse(localStorage.getItem('cscratch_games') || '[]');
+                const updatedGames = games.filter(g => g.gameId !== game.gameId);
+                localStorage.setItem('cscratch_games', JSON.stringify(updatedGames));
                 showStorySelection();
             });
 
-            threadList.appendChild(threadElement);
+            gameList.appendChild(gameElement);
         });
     } else {
-        threadList.innerHTML = '<p>No saved threads yet.</p>';
+        gameList.innerHTML = '<p>No saved games yet.</p>';
     }
 }
 
@@ -140,7 +140,7 @@ function updateUrl() {
 
     let newUrl = `/cscratch/stories/${selectedStory.id}`;
     if (currentGameId) {
-        newUrl += `/threads/${currentGameId}`;
+        newUrl += `/games/${currentGameId}`;
     }
     history.pushState({path: newUrl}, '', newUrl);
 }
@@ -212,10 +212,10 @@ async function send() {
         currentGameId = crypto.randomUUID();
         sessionStorage.setItem('game_id', currentGameId);
         
-        const threads = JSON.parse(localStorage.getItem('cscratch_threads') || '[]');
-        if (!threads.some(t => t.threadId === currentGameId)) {
-            threads.push({ storyId: story_id, threadId: currentGameId });
-            localStorage.setItem('cscratch_threads', JSON.stringify(threads));
+        const games = JSON.parse(localStorage.getItem('cscratch_games') || '[]');
+        if (!games.some(g => g.gameId === currentGameId)) {
+            games.push({ storyId: story_id, gameId: currentGameId });
+            localStorage.setItem('cscratch_games', JSON.stringify(games));
         }
 
         updateUrl();
