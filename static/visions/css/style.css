@@ -1,12 +1,13 @@
 /* A modern CSS reset */
 :root {
     --primary-color: #007bff;
-    --background-color: #f8f9fa;
-    --text-color: #333;
-    --header-bg: #ffffff;
-    --footer-bg: #343a40;
-    --footer-text: #f8f9fa;
-    --border-color: #dee2e6;
+    --background-color: #121212;
+    --text-color: #e0e0e0;
+    --header-bg: #1e1e1e;
+    --footer-bg: #1e1e1e;
+    --footer-text: #e0e0e0;
+    --border-color: #333;
+    --section-bg: #1e1e1e;
 }
 
 body {
@@ -25,7 +26,7 @@ header {
     background-color: var(--header-bg);
     padding: 1rem 2rem;
     border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     text-align: center;
 }
 
@@ -61,7 +62,7 @@ main {
 }
 
 section {
-    background-color: #fff;
+    background-color: var(--section-bg);
     padding: 1.5rem;
     margin-bottom: 2rem;
     border-radius: 8px;
@@ -97,7 +98,8 @@ section {
 }
 
 #generate-btn:disabled {
-    background-color: #a0a0a0;
+    background-color: #555;
+    color: #aaa;
     cursor: not-allowed;
 }
 
@@ -111,9 +113,9 @@ section {
 
 /* Pulse effect for the button background while loading */
 @keyframes pulse-gray {
-    0% { background-color: #a0a0a0; }
-    50% { background-color: #b0b0b0; }
-    100% { background-color: #a0a0a0; }
+    0% { background-color: #555; }
+    50% { background-color: #666; }
+    100% { background-color: #555; }
 }
 
 .loading {
